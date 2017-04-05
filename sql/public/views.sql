@@ -1,4 +1,4 @@
-CREATE VIEW view_latest_dataset AS
+CREATE VIEW public.view_latest_dataset AS
   WITH latest AS (
     SELECT DISTINCT ON (id) id FROM dataset
     ORDER BY id, updated_time DESC
@@ -40,4 +40,4 @@ CREATE VIEW view_latest_dataset AS
   LEFT JOIN dataset_publisher AS p ON p.id = d.publisher_id
   LEFT JOIN latest_tag AS lt ON lt.dataset_id = d.id
   LEFT JOIN latest_category AS lc ON lc.dataset_id = d.id
-  LEFT JOIN region AS r ON r.id = d.region_id
+  LEFT JOIN region AS r ON r.id = d.region_id;

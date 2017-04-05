@@ -1,11 +1,11 @@
-CREATE TABLE platform (
+CREATE TABLE public.platform (
   id serial PRIMARY KEY,
   name text NOT NULL,
   url text NOT NULL,
   description text
 );
 
-CREATE TABLE portal (
+CREATE TABLE public.portal (
   id serial PRIMARY KEY,
   name text NOT NULL,
   url text NOT NULL,
@@ -13,25 +13,25 @@ CREATE TABLE portal (
   description text
 );
 
-CREATE TABLE junar_portal_info (
+CREATE TABLE public.junar_portal_info (
   id serial PRIMARY KEY,
   portal_id integer REFERENCES portal (id),
   api_url text NOT NULL,
   api_key text NOT NULL
 );
 
-CREATE TABLE region (
+CREATE TABLE public.region (
   id serial PRIMARY KEY,
   name text,
   geom geometry(MultiPolygon,4326)
 );
 
-CREATE TABLE dataset_publisher (
+CREATE TABLE public.dataset_publisher (
   id serial PRIMARY KEY,
   name text NOT NULL
 );
 
-CREATE TABLE dataset (
+CREATE TABLE public.dataset (
   id serial PRIMARY KEY,
   name text NOT NULL,
   portal_dataset_id text,
@@ -47,23 +47,23 @@ CREATE TABLE dataset (
   raw json NOT NULL
 );
 
-CREATE TABLE dataset_tag (
+CREATE TABLE public.dataset_tag (
   id serial PRIMARY KEY,
   name text NOT NULL
 );
 
-CREATE TABLE dataset_tag_xref (
+CREATE TABLE public.dataset_tag_xref (
   id serial PRIMARY KEY,
   dataset_id integer REFERENCES dataset (id),
   dataset_tag_id integer REFERENCES dataset_tag (id)
 );
 
-CREATE TABLE dataset_category (
+CREATE TABLE public.dataset_category (
   id serial PRIMARY KEY,
   name text NOT NULL
 );
 
-CREATE TABLE dataset_category_xref (
+CREATE TABLE public.dataset_category_xref (
   id serial PRIMARY KEY,
   dataset_id integer REFERENCES dataset (id),
   dataset_category_id integer REFERENCES dataset_category (id)

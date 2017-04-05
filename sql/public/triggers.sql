@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION insert_new_dataset() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
   DECLARE
     last_updated_time timestamp;
     publisher_id integer;
@@ -69,6 +69,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER insert_new_dataset
 INSTEAD OF INSERT
-ON view_latest_dataset
+ON public.view_latest_dataset
 FOR EACH ROW
-EXECUTE PROCEDURE insert_new_dataset();
+EXECUTE PROCEDURE public.insert_new_dataset();
