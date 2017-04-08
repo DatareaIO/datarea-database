@@ -34,7 +34,7 @@ CREATE VIEW public.view_latest_dataset AS
     lt.tags,
     lc.categories,
     d.raw,
-    r.geom
+    ST_AsGeoJSON(r.location)::json
   FROM dataset AS d
   INNER JOIN latest AS l ON l.id = d.id
   LEFT JOIN dataset_publisher AS p ON p.id = d.publisher_id

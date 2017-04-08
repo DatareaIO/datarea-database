@@ -5,12 +5,25 @@ CREATE TABLE public.platform (
   description text
 );
 
+CREATE TABLE public.region (
+  id serial PRIMARY KEY,
+  name text,
+  continent text,
+  country text,
+  province text,
+  region text,
+  city text,
+  location geometry(Point, 4326),
+  boundary geometry(MultiPolygon, 4326)
+);
+
 CREATE TABLE public.portal (
   id serial PRIMARY KEY,
   name text NOT NULL,
   url text NOT NULL,
+  description text,
   platform_id integer REFERENCES platform (id),
-  description text
+  region_id integer REFERENCES region(id)
 );
 
 CREATE TABLE public.junar_portal_info (
@@ -18,12 +31,6 @@ CREATE TABLE public.junar_portal_info (
   portal_id integer REFERENCES portal (id),
   api_url text NOT NULL,
   api_key text NOT NULL
-);
-
-CREATE TABLE public.region (
-  id serial PRIMARY KEY,
-  name text,
-  geom geometry(MultiPolygon,4326)
 );
 
 CREATE TABLE public.dataset_publisher (
