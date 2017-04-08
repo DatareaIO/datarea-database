@@ -2,6 +2,7 @@ import { Observable } from 'rxjs';
 import pgrx from 'pg-reactive';
 import fs from 'fs';
 import path from 'path';
+import _ from 'lodash';
 
 function escape(string) {
   if(!string) {
@@ -24,7 +25,8 @@ let schemaFiles = [
   'sql/public/indexes.sql',
   'sql/public/triggers.sql',
   'sql/search_engine/schema.sql',
-  'sql/search_engine/material_views.sql'
+  'sql/search_engine/material_views.sql',
+  'sql/search_engine/indexes.sql'
 ];
 
 let createSchema = Observable.of(...schemaFiles)
@@ -86,4 +88,7 @@ let addJunarInfo = srcDB.query(sql)
   });
 
 Observable.merge(createSchema, addPlatforms, addPortals, addJunarInfo, 1)
-  .subscribe(() => {}, null, () => { console.log('complete!'); process.exit(); });
+  .subscribe(_.noop, null, () => {
+    console.log('complete!');
+    process.exit();
+  });
