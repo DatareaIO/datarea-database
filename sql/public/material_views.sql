@@ -5,12 +5,12 @@ CREATE MATERIALIZED VIEW public.view_portal AS
       COUNT(sd.portal_dataset_id),
       MAX(sd.updated_time) AS updated_time
     FROM (
-      SELECT DISTINCT ON (d.portal_dataset_id)
+      SELECT DISTINCT ON (d.portal_id, d.portal_dataset_id)
         d.portal_dataset_id,
         d.portal_id,
         d.updated_time
       FROM public.dataset AS d
-      ORDER BY d.portal_dataset_id, d.updated_time DESC
+      ORDER BY d.portal_id, d.portal_dataset_id, d.updated_time DESC
     ) sd
     GROUP BY sd.portal_id
   )
