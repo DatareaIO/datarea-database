@@ -1,4 +1,4 @@
-CREATE MATERIALIZED VIEW public.view_portals AS
+CREATE MATERIALIZED VIEW public.view_portal AS
   WITH data_summary AS (
     SELECT
       sd.portal_id,
