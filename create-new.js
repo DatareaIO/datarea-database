@@ -28,9 +28,9 @@ destDB.tx((t) => {
   ];
 
   let createSchema = Observable.of(...schemaFiles)
-    .mergeMap((sqlPath) => fs.readFileSync(path.resolve(__dirname, sqlPath), 'utf8'))
+    .map((sqlPath) => fs.readFileSync(path.resolve(__dirname, sqlPath), 'utf8'))
     .reduce((schema, sql) => schema + sql, '')
-    .mergeMap((schema) => destDB.query(schema))
+    .mergeMap((schema) => t.query(schema))
     .catch((error) => {
       console.log('Unable to set up schema.');
       throw error;
@@ -57,14 +57,13 @@ destDB.tx((t) => {
    */
 
   let addRegions = Observable.of(...sync(path.resolve(__dirname, 'data/locations/*.geojson')))
-    .mergeMap((path) => rxReadFile(path))
-    .map((data) => JSON.parse(data))
+    .map((path) => JSON.parse(fs.readFileSync(path, 'utf8')))
     .mergeMap((geojson) => {
       let feature = geojson.features[0];
       let properties = feature.properties;
       let insertNewRegion = `
         INSERT INTO location (name, continent, country, province, region, city, geom)
-        VALUES ($1::text, $2::text, $3::text, $4::text, $5::text, $6::text, ST_SetSRID(ST_GeomFromGeoJSON($7::text), 5432))
+        VALUES ($1::text, $2::text, $3::text, $4::text, $5::text, $6::text, ST_SetSRID(ST_GeomFromGeoJSON($7::text), 4326))
         RETURNING id, name
       `;
 
@@ -102,7 +101,7 @@ destDB.tx((t) => {
       values.push(value);
       return values;
     }, [])
-    .map((values) => `INSERT INTO portal (name, url, description, platform_id, region_id) VALUES ${values.join(',')};`)
+    .map((values) => `INSERT INTO portal (name, url, description, platform_id, location_id) VALUES ${values.join(',')};`)
     .mergeMap((sql) => t.query(sql))
     .catch((error) => {
       console.log('Unable to add portals.');
