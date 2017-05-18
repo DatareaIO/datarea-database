@@ -12,18 +12,20 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
         RETURNING id INTO publisher_id;
       END IF;
 
-      SELECT id INTO dataset_region_id FROM dataset_region
-      WHERE ST_Equals(NEW.region, geom) LIMIT 1;
+      IF NEW.region IS NOT NULL THEN
+        SELECT id INTO dataset_region_id FROM dataset_region
+        WHERE ST_Equals(NEW.region, geom) LIMIT 1;
 
-      IF NOT FOUND THEN
-        INSERT INTO dataset_region (geom) VALUES (NEW.geom)
-        RETURNING id INTO dataset_region_id;
+        IF NOT FOUND THEN
+          INSERT INTO dataset_region (geom) VALUES (NEW.region)
+          RETURNING id INTO dataset_region_id;
+        END IF;
       END IF;
 
       UPDATE dataset SET version_period = tstzrange(
         lower(version_period),
-        NEW.version_period,
-        '[)]'
+        NEW.updated_time,
+        '[)'::text
       )
       WHERE portal_dataset_id = NEW.portal_dataset_id AND
             portal_id = NEW.portal_id AND

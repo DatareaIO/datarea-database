@@ -1,4 +1,4 @@
-CREATE VIEW public.view_latest_dataset AS
+CREATE OR REPLACE VIEW public.view_latest_dataset AS
   WITH latest AS (
     SELECT DISTINCT ON (portal_id, portal_dataset_id) id
     FROM dataset
@@ -35,7 +35,9 @@ CREATE VIEW public.view_latest_dataset AS
     lt.tags,
     lc.categories,
     d.raw,
-    ST_AsGeoJSON(dr.geom, 6)::json AS region
+    dr.geom AS region,
+    d.version_number,
+    d.version_period
   FROM dataset AS d
   INNER JOIN latest AS l ON l.id = d.id
   LEFT JOIN dataset_publisher AS p ON p.id = d.publisher_id
