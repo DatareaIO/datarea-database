@@ -71,12 +71,13 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
         SELECT NEW.id, id FROM new_categories
       );
 
-      INSERT INTO dataset_data (dataset_id, name, link, format) (
+      INSERT INTO dataset_data (dataset_id, name, link, format, description) (
         SELECT
           NEW.id,
           file ->> 'name',
           file ->> 'link',
-          file ->> 'format'
+          file ->> 'format',
+          file ->> 'description'
         FROM unnest(NEW.data) AS data(file)
       );
 

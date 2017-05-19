@@ -65,7 +65,8 @@ CREATE TABLE public.dataset_data (
   dataset_id integer NOT NULL REFERENCES dataset(id),
   name text NOT NULL,
   format text NOT NULL,
-  link text NOT NULL
+  link text NOT NULL,
+  description text
 );
 
 CREATE TABLE public.dataset_tag (

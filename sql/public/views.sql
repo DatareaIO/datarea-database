@@ -50,7 +50,8 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
       array_agg(json_build_object(
         'name', dd.name,
         'link', dd.link,
-        'format', dd.format
+        'format', dd.format,
+        'description', dd.description
       )) AS data
     FROM latest, dataset_data AS dd
     WHERE latest.id = dd.dataset_id
