@@ -33,11 +33,11 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
 
       INSERT INTO dataset (
         name, portal_dataset_id, created_time, updated_time, description,
-        portal_link, data_link, publisher_id, portal_id, raw,
+        portal_link, publisher_id, portal_id, raw,
         dataset_region_id, version_number, version_period
       ) VALUES (
         NEW.name, NEW.portal_dataset_id, NEW.created_time, NEW.updated_time, NEW.description,
-        NEW.portal_link, NEW.data_link, publisher_id, NEW.portal_id, NEW.raw,
+        NEW.portal_link, publisher_id, NEW.portal_id, NEW.raw,
         dataset_region_id, NEW.version_number,  NEW.version_period
       ) RETURNING id INTO NEW.id;
 
@@ -69,6 +69,15 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
         SELECT NEW.id, id FROM existing_categories
         UNION ALL
         SELECT NEW.id, id FROM new_categories
+      );
+
+      INSERT INTO dataset_data (dataset_id, name, link, format) (
+        SELECT
+          NEW.id,
+          file ->> 'name',
+          file ->> 'link',
+          file ->> 'format'
+        FROM unnest(NEW.data) AS data(file)
       );
 
       RETURN NEW;

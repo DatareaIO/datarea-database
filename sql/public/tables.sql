@@ -51,7 +51,6 @@ CREATE TABLE public.dataset (
   updated_time timestamptz NOT NULL,
   description text,
   portal_link text NOT NULL,
-  data_link text,
   license text,
   publisher_id integer REFERENCES dataset_publisher (id),
   portal_id integer REFERENCES portal (id),
@@ -59,6 +58,14 @@ CREATE TABLE public.dataset (
   raw json NOT NULL,
   version_number integer NOT NULL,
   version_period tstzrange NOT NULL
+);
+
+CREATE TABLE public.dataset_data (
+  id serial PRIMARY KEY,
+  dataset_id integer NOT NULL REFERENCES dataset(id),
+  name text NOT NULL,
+  format text NOT NULL,
+  link text NOT NULL
 );
 
 CREATE TABLE public.dataset_tag (
