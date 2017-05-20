@@ -56,6 +56,7 @@ CREATE TABLE public.dataset (
   portal_id integer REFERENCES portal (id),
   dataset_region_id integer REFERENCES dataset_region (id),
   raw json NOT NULL,
+  raw_md5 char(32) NOT NULL,
   version_number integer NOT NULL,
   version_period tstzrange NOT NULL
 );
