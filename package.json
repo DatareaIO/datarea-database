@@ -18,11 +18,11 @@
   "homepage": "https://gitlab.com/datarea/datarea-database#README",
   "dependencies": {
     "config": "^1.26.1",
-    "glob": "^7.1.1",
+    "glob": "^7.1.2",
     "lodash": "^4.17.4",
     "pg-reactive": "^0.2.1",
-    "rx-from-csv": "^0.1.0",
-    "rx-to-csv": "^0.1.1",
+    "rx-from-csv": "^0.1.1",
+    "rx-to-csv": "^0.1.2",
     "rxjs": "^5.4.0"
   },
   "devDependencies": {

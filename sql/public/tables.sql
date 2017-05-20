@@ -24,7 +24,7 @@ CREATE TABLE public.dataset_region (
 
 CREATE TABLE public.portal (
   id serial PRIMARY KEY,
-  name text NOT NULL,
+  name text,
   url text NOT NULL,
   description text,
   platform_id integer REFERENCES platform (id),
@@ -64,7 +64,7 @@ CREATE TABLE public.dataset_data (
   id serial PRIMARY KEY,
   dataset_id integer NOT NULL REFERENCES dataset(id),
   name text NOT NULL,
-  format text NOT NULL,
+  format text,
   link text NOT NULL,
   description text
 );
