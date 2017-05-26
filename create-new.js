@@ -22,9 +22,9 @@ destDB.tx((t) => {
     'sql/public/indexes.sql',
     'sql/public/triggers.sql',
     'sql/public/material_views.sql',
-    'sql/search_engine/schema.sql',
-    'sql/search_engine/material_views.sql',
-    'sql/search_engine/indexes.sql'
+    // 'sql/search_engine/schema.sql',
+    // 'sql/search_engine/material_views.sql',
+    // 'sql/search_engine/indexes.sql'
   ];
 
   let createSchema = Observable.of(...schemaFiles)

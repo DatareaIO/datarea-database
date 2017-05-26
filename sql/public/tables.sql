@@ -47,6 +47,7 @@ CREATE TABLE public.dataset (
   id serial PRIMARY KEY,
   name text NOT NULL,
   portal_dataset_id text,
+  portal_dataset_md5 char(32),
   created_time timestamptz,
   updated_time timestamptz NOT NULL,
   description text,
