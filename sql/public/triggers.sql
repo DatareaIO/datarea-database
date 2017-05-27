@@ -32,11 +32,11 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
             version_number = NEW.version_number - 1;
 
       INSERT INTO dataset (
-        name, portal_dataset_id, portal_dataset_md5, created_time, updated_time, description,
+        name, portal_dataset_id, uuid, created_time, updated_time, description,
         portal_link, publisher_id, portal_id, raw, raw_md5,
         dataset_region_id, version_number, version_period
       ) VALUES (
-        NEW.name, NEW.portal_dataset_id, NEW.portal_dataset_md5, NEW.created_time, NEW.updated_time, NEW.description,
+        NEW.name, NEW.portal_dataset_id, NEW.uuid, NEW.created_time, NEW.updated_time, NEW.description,
         NEW.portal_link, publisher_id, NEW.portal_id, NEW.raw, md5(NEW.raw::text),
         dataset_region_id, NEW.version_number,  NEW.version_period
       ) RETURNING id INTO NEW.id;

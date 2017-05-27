@@ -1,6 +1,6 @@
 CREATE INDEX ON public.dataset (id);
 CREATE INDEX ON public.dataset (portal_dataset_id);
-CREATE INDEX ON public.dataset (portal_dataset_md5);
+CREATE INDEX ON public.dataset (uuid);
 CREATE INDEX ON public.dataset (version_number);
 CREATE INDEX ON public.portal (id);
 CREATE INDEX ON public.dataset_publisher (name);

@@ -24,7 +24,7 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
     d.id,
     d.portal_id,
     d.portal_dataset_id,
-    d.portal_dataset_md5,
+    d.uuid,
     d.name,
     d.created_time,
     d.updated_time,
