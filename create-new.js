@@ -27,7 +27,10 @@ destDB.tx((t) => {
     // 'sql/search_engine/indexes.sql'
     'sql/legacy/schema.sql',
     'sql/legacy/tables.sql',
-    'sql/legacy/indexes.sql'
+    'sql/legacy/indexes.sql',
+    'sql/report/schema.sql',
+    'sql/report/tables.sql',
+    'sql/report/views.sql'
   ];
 
   let createSchema = Observable.of(...schemaFiles)
