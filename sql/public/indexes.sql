@@ -8,7 +8,7 @@ CREATE INDEX ON public.dataset_tag (name);
 CREATE INDEX ON public.dataset_category (name);
 CREATE INDEX ON public.dataset_region USING GIST (geom);
 
-CREATE UNIQUE INDEX ON public.dataset (portal_id, portal_dataset_id, updated_time);
+CREATE UNIQUE INDEX ON public.dataset (portal_id, portal_dataset_id, version_number);
 CREATE UNIQUE INDEX ON public.dataset_tag (name);
 CREATE UNIQUE INDEX ON public.dataset_category (name);
 CREATE UNIQUE INDEX ON public.dataset_publisher (name);

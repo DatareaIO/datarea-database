@@ -65,7 +65,7 @@ CREATE TABLE public.dataset (
 CREATE TABLE public.dataset_data (
   id serial PRIMARY KEY,
   dataset_id integer NOT NULL REFERENCES dataset(id),
-  name text NOT NULL,
+  name text DEFAULT 'Data File',
   format text,
   link text NOT NULL,
   description text
