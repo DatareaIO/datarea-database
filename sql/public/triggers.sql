@@ -5,6 +5,16 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
   BEGIN
     IF (TG_OP = 'INSERT') THEN
 
+      PERFORM id FROM dataset
+      WHERE portal_id = NEW.portal_id AND
+            portal_dataset_id = NEW.portal_dataset_id AND
+            version_number = NEW.version_number
+      LIMIT 1;
+
+      IF FOUND THEN
+        RETURN NEW;
+      END IF;
+
       SELECT id INTO publisher_id FROM dataset_publisher WHERE name = NEW.publisher LIMIT 1;
 
       IF NOT FOUND THEN
