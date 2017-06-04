@@ -1,4 +1,7 @@
-CREATE MATERIALIZED VIEW public.view_portal AS
+CREATE MATERIALIZED VIEW public.mview_latest_dataset AS
+  SELECT * FROM public.veiw_latest_dataset;
+
+CREATE MATERIALIZED VIEW public.mview_portal AS
   WITH data_summary AS (
     SELECT
       sd.portal_id,
