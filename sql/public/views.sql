@@ -92,4 +92,4 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
   LEFT JOIN dt ON dt.dataset_id = ds.id
   LEFT JOIN dc ON dc.dataset_id = ds.id
   LEFT JOIN dd ON dd.dataset_id = ds.id
-  LEFT JOIN versions AS v ON v.uuid = ds.uuid
+  LEFT JOIN versions AS v ON v.uuid = ds.uuid;

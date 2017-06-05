@@ -19,9 +19,9 @@ destDB.tx((t) => {
   let schemaFiles = [
     'sql/public/tables.sql',
     'sql/public/views.sql',
+    'sql/public/material_views.sql',
     'sql/public/indexes.sql',
     'sql/public/triggers.sql',
-    'sql/public/material_views.sql',
     // 'sql/search_engine/schema.sql',
     // 'sql/search_engine/material_views.sql',
     // 'sql/search_engine/indexes.sql'

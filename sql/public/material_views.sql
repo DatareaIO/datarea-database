@@ -1,5 +1,5 @@
 CREATE MATERIALIZED VIEW public.mview_latest_dataset AS
-  SELECT * FROM public.veiw_latest_dataset;
+  SELECT * FROM public.view_latest_dataset;
 
 CREATE MATERIALIZED VIEW public.mview_portal AS
   WITH data_summary AS (
