@@ -48,26 +48,27 @@ CREATE TABLE public.dataset (
   name text NOT NULL,
   portal_dataset_id text,
   uuid char(36) NOT NULL,
-  created_time timestamptz,
-  updated_time timestamptz NOT NULL,
+  created timestamptz,
+  updated timestamptz NOT NULL,
   description text,
-  portal_link text NOT NULL,
+  url text NOT NULL,
   license text,
   publisher_id integer REFERENCES dataset_publisher (id),
   portal_id integer REFERENCES portal (id),
   dataset_region_id integer REFERENCES dataset_region (id),
   raw json NOT NULL,
   raw_md5 char(32) NOT NULL,
-  version_number integer NOT NULL,
+  version integer NOT NULL,
   version_period tstzrange NOT NULL
 );
 
-CREATE TABLE public.dataset_data (
+CREATE TABLE public.dataset_file (
   id serial PRIMARY KEY,
   dataset_id integer NOT NULL REFERENCES dataset(id),
   name text DEFAULT 'Data File',
   format text,
-  link text NOT NULL,
+  extension text,
+  url text NOT NULL,
   description text
 );
 

@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
       PERFORM id FROM dataset
       WHERE portal_id = NEW.portal_id AND
             portal_dataset_id = NEW.portal_dataset_id AND
-            version_number = NEW.version_number
+            version = NEW.version
       LIMIT 1;
 
       IF FOUND THEN
@@ -24,31 +24,31 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
 
       IF NEW.region IS NOT NULL THEN
         SELECT id INTO dataset_region_id FROM dataset_region
-        WHERE ST_Equals(NEW.region, geom) LIMIT 1;
+        WHERE ST_Equals(ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.region)), 4326), geom) LIMIT 1;
 
         IF NOT FOUND THEN
-          INSERT INTO dataset_region (geom) VALUES (NEW.region)
+          INSERT INTO dataset_region (geom) VALUES (ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.region)), 4326))
           RETURNING id INTO dataset_region_id;
         END IF;
       END IF;
 
       UPDATE dataset SET version_period = tstzrange(
         lower(version_period),
-        NEW.updated_time,
+        NEW.updated,
         '[)'::text
       )
       WHERE portal_dataset_id = NEW.portal_dataset_id AND
             portal_id = NEW.portal_id AND
-            version_number = NEW.version_number - 1;
+            version = NEW.version - 1;
 
       INSERT INTO dataset (
-        name, portal_dataset_id, uuid, created_time, updated_time, description,
-        portal_link, publisher_id, portal_id, raw, raw_md5,
-        dataset_region_id, version_number, version_period
+        name, portal_dataset_id, uuid, created, updated, description,
+        url, publisher_id, portal_id, raw, raw_md5,
+        dataset_region_id, version, version_period
       ) VALUES (
-        NEW.name, NEW.portal_dataset_id, NEW.uuid, NEW.created_time, NEW.updated_time, NEW.description,
-        NEW.portal_link, publisher_id, NEW.portal_id, NEW.raw, md5(NEW.raw::text),
-        dataset_region_id, NEW.version_number,  NEW.version_period
+        NEW.name, NEW.portal_dataset_id, NEW.uuid, NEW.created, NEW.updated, NEW.description,
+        NEW.url, publisher_id, NEW.portal_id, NEW.raw, md5(NEW.raw::text),
+        dataset_region_id, NEW.version,  NEW.version_period
       ) RETURNING id INTO NEW.id;
 
       WITH existing_tags AS (
@@ -81,14 +81,15 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
         SELECT NEW.id, id FROM new_categories
       );
 
-      INSERT INTO dataset_data (dataset_id, name, link, format, description) (
+      INSERT INTO dataset_file (dataset_id, name, url, format, description, extension) (
         SELECT
           NEW.id,
           file ->> 'name',
-          file ->> 'link',
+          file ->> 'url',
           file ->> 'format',
-          file ->> 'description'
-        FROM unnest(NEW.data) AS data(file)
+          file ->> 'description',
+          file ->> 'extension'
+        FROM unnest(NEW.files) AS data(file)
       );
 
       RETURN NEW;
