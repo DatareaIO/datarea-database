@@ -1,21 +1,21 @@
 {
-  "name": "datarea-database",
+  "name": "database-schema",
   "version": "1.0.0",
-  "description": "This is the database setting for datarea.io.",
+  "description": "Database schema for SingularData.net",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://haoliangyu@gitlab.com/datarea/datarea-database.git"
+    "url": "git+https://haoliangyu@github.com/SingularData/database-schema.git"
   },
   "author": "Haoliang Yu <haholiang.yu@outlook.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/datarea/datarea-database/issues"
+    "url": "https://github.com/SingularData/database-schema/issues"
   },
-  "homepage": "https://gitlab.com/datarea/datarea-database#README",
+  "homepage": "https://github.com/SingularData/database-schema#README",
   "dependencies": {
     "config": "^1.26.1",
     "glob": "^7.1.2",

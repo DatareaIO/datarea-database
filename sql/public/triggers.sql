@@ -24,10 +24,10 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
 
       IF NEW.region IS NOT NULL THEN
         SELECT id INTO dataset_region_id FROM dataset_region
-        WHERE ST_Equals(ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.region)), 4326), geom) LIMIT 1;
+        WHERE ST_Equals(ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.region::text)), 4326), geom) LIMIT 1;
 
         IF NOT FOUND THEN
-          INSERT INTO dataset_region (geom) VALUES (ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.region)), 4326))
+          INSERT INTO dataset_region (geom) VALUES (ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.region::text)), 4326))
           RETURNING id INTO dataset_region_id;
         END IF;
       END IF;
