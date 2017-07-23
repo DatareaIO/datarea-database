@@ -102,3 +102,34 @@ INSTEAD OF INSERT
 ON public.view_latest_dataset
 FOR EACH ROW
 EXECUTE PROCEDURE public.insert_new_dataset();
+
+CREATE OR REPLACE FUNCTION public.insert_new_portal() RETURNS TRIGGER AS $$
+  DECLARE
+    location_id integer;
+    platform_id integer;
+  BEGIN
+    IF (TG_OP = 'INSERT') THEN
+
+      SELECT id INTO platform_id FROM platform WHERE name = NEW.platform LIMIT 1;
+
+      SELECT id INTO location_id FROM location WHERE name = NEW.location_name LIMIT 1;
+
+      IF NOT FOUND AND NEW.location IS NOT NULL THEN
+        INSERT INTO location (geom)
+        VALUES (ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.location::text)), 4326))
+        RETURNING id INTO location_id;
+      END IF;
+
+      INSERT INTO portal (name, url, description, platform_id, location_id)
+      VALUES (NEW.name, NEW.url, NEW.description, platform_id, location_id);
+
+      RETURN NEW;
+    END IF;
+  END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER insert_new_portal
+INSTEAD OF INSERT
+ON public.view_portal
+FOR EACH ROW
+EXECUTE PROCEDURE public.insert_new_portal();

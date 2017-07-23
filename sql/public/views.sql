@@ -93,3 +93,16 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
   LEFT JOIN dc ON dc.dataset_id = ds.id
   LEFT JOIN df ON df.dataset_id = ds.id
   LEFT JOIN versions AS v ON v.uuid = ds.uuid;
+
+CREATE OR REPLACE VIEW public.view_portal AS
+  SELECT
+    p.id,
+    p.name,
+    p.url,
+    p.description,
+    pl.name AS platform,
+    l.name AS location_name,
+    ST_AsGeoJSON(l.geom, 6)::json AS location
+  FROM portal AS p
+  LEFT JOIN platform AS pl ON pl.id = p.platform_id
+  LEFT JOIN location AS l ON l.id = p.location_id;
