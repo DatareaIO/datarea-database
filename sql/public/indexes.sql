@@ -18,6 +18,7 @@ CREATE INDEX ON public.dataset_region USING GIST (geom);
  * Table unique indexes
  */
 CREATE UNIQUE INDEX ON public.dataset (portal_id, portal_dataset_id, version);
+CREATE UNIQUE INDEX ON public.dataset (raw_md5);
 CREATE UNIQUE INDEX ON public.dataset_tag (name);
 CREATE UNIQUE INDEX ON public.dataset_category (name);
 CREATE UNIQUE INDEX ON public.dataset_publisher (name);
