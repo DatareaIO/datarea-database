@@ -20,7 +20,7 @@ CREATE OR REPLACE VIEW report.view_statistics AS
   UNION ALL
   SELECT 'publisher' AS field, COUNT(*) FROM dataset_publisher
   UNION ALL
-  SELECT 'dataset coverage' AS field, COUNT(*) FROM dataset_region;
+  SELECT 'dataset coverage' AS field, COUNT(*) FROM dataset_coverage;
 
 CREATE OR REPLACE VIEW report.view_top_category AS
   SELECT

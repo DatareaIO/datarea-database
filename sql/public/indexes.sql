@@ -12,7 +12,7 @@ CREATE INDEX ON public.dataset_tag (name);
 CREATE INDEX ON public.dataset_category_xref(dataset_id);
 CREATE INDEX ON public.dataset_category (name);
 CREATE INDEX ON public.dataset_file (dataset_id);
-CREATE INDEX ON public.dataset_region USING GIST (geom);
+CREATE INDEX ON public.dataset_coverage USING GIST (geom);
 
 /**
  * Table unique indexes

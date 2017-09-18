@@ -16,12 +16,6 @@ CREATE TABLE public.location (
   geom geometry(Point, 4326)
 );
 
-CREATE TABLE public.dataset_region (
-  id serial PRIMARY KEY,
-  name text,
-  geom geometry(MultiPolygon, 4326)
-);
-
 CREATE TABLE public.portal (
   id serial PRIMARY KEY,
   name text,
@@ -55,11 +49,22 @@ CREATE TABLE public.dataset (
   license text,
   publisher_id integer REFERENCES dataset_publisher (id),
   portal_id integer REFERENCES portal (id),
-  dataset_region_id integer REFERENCES dataset_region (id),
   raw json NOT NULL,
   raw_md5 char(32) NOT NULL,
   version integer NOT NULL,
   version_period tstzrange NOT NULL
+);
+
+CREATE TABLE public.dataset_coverage (
+  id serial PRIMARY KEY,
+  name text,
+  geom geometry(MultiPolygon, 4326)
+);
+
+CREATE TABLE public.dataset_coverage_xref (
+  id serial PRIMARY KEY,
+  dataset_id integer NOT NULL REFERENCES dataset(id),
+  dataset_coverage_id integer NOT NULL REFERENCES dataset_coverage(id)
 );
 
 CREATE TABLE public.dataset_file (

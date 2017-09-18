@@ -15,8 +15,7 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
       d.created,
       d.updated,
       d.license,
-      dr.name AS region_name,
-      ST_AsGeoJSON(dr.geom, 6)::json AS region,
+      ST_AsGeoJSON(dc.geom, 6)::json AS spatial,
       d.version,
       d.version_period,
       d.raw
@@ -24,7 +23,8 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
     LEFT JOIN dataset_publisher p ON p.id = d.publisher_id
     LEFT JOIN portal AS po ON po.id = d.portal_id
     LEFT JOIN platform AS pl ON pl.id = po.platform_id
-    LEFT JOIN dataset_region AS dr ON dr.id = d.dataset_region_id
+    LEFT JOIN dataset_coverage_xref AS dcx ON dcx.dataset_id = d.id
+    LEFT JOIN dataset_coverage AS dc ON dc.id = dcx.dataset_coverage_id
     ORDER BY uuid, version DESC
   ), versions AS (
     SELECT
@@ -79,8 +79,7 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
     ds.created,
     ds.updated,
     ds.license,
-    ds.region_name,
-    ds.region,
+    ds.spatial,
     ds.version,
     ds.version_period,
     COALESCE(v.all, '{}') AS version_history,

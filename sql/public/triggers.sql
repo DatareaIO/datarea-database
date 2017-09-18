@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
   DECLARE
-    dataset_region_id integer;
+    coverage_id integer;
     publisher_id integer;
   BEGIN
     IF (TG_OP = 'INSERT') THEN
@@ -22,16 +22,6 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
         RETURNING id INTO publisher_id;
       END IF;
 
-      IF NEW.region IS NOT NULL THEN
-        SELECT id INTO dataset_region_id FROM dataset_region
-        WHERE ST_Equals(ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.region::text)), 4326), geom) LIMIT 1;
-
-        IF NOT FOUND THEN
-          INSERT INTO dataset_region (geom) VALUES (ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.region::text)), 4326))
-          RETURNING id INTO dataset_region_id;
-        END IF;
-      END IF;
-
       UPDATE dataset SET version_period = tstzrange(
         lower(version_period),
         NEW.updated,
@@ -44,12 +34,25 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
       INSERT INTO dataset (
         name, portal_dataset_id, uuid, created, updated, description,
         url, publisher_id, portal_id, raw, raw_md5,
-        dataset_region_id, version, version_period
+        version, version_period
       ) VALUES (
         NEW.name, NEW.portal_dataset_id, NEW.uuid, NEW.created, NEW.updated, NEW.description,
         NEW.url, publisher_id, NEW.portal_id, NEW.raw, md5(NEW.raw::text),
-        dataset_region_id, NEW.version,  NEW.version_period
+        NEW.version,  NEW.version_period
       ) RETURNING id INTO NEW.id;
+
+      IF NEW.spatial IS NOT NULL THEN
+        SELECT id INTO coverage_id FROM dataset_coverage
+        WHERE ST_Equals(ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.spatial::text)), 4326), geom) LIMIT 1;
+
+        IF NOT FOUND THEN
+          INSERT INTO dataset_coverage (geom) VALUES (ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.spatial::text)), 4326))
+          RETURNING id INTO coverage_id;
+
+          INSERT INTO dataset_coverage_xref (dataset_id, dataset_coverage_id) VALUES
+          (NEW.id, coverage_id);
+        END IF;
+      END IF;
 
       WITH existing_tags AS (
         SELECT id, name FROM dataset_tag WHERE name = any(NEW.tags)
