@@ -1,26 +1,25 @@
 CREATE MATERIALIZED VIEW public.mview_latest_dataset AS
   SELECT
     view_latest_dataset.id,
-    view_latest_dataset.uuid,
-    view_latest_dataset.name,
+    view_latest_dataset.identifier,
+    view_latest_dataset.title,
     view_latest_dataset.description,
     view_latest_dataset.publisher,
     view_latest_dataset.portal_id,
     view_latest_dataset.portal,
     view_latest_dataset.portal_url,
-    view_latest_dataset.portal_dataset_id,
     view_latest_dataset.platform,
-    view_latest_dataset.url,
-    view_latest_dataset.created,
-    view_latest_dataset.updated,
+    view_latest_dataset.landing_page,
+    view_latest_dataset.issued,
+    view_latest_dataset.modified,
     view_latest_dataset.license,
     view_latest_dataset.spatial,
     view_latest_dataset.version,
     view_latest_dataset.version_period,
     view_latest_dataset.version_history,
-    view_latest_dataset.files,
-    view_latest_dataset.tags,
-    view_latest_dataset.categories
+    view_latest_dataset.distribution,
+    view_latest_dataset.keyword,
+    view_latest_dataset.theme
   FROM view_latest_dataset
   WITH DATA;
 
@@ -28,15 +27,16 @@ CREATE MATERIALIZED VIEW public.mview_portal AS
   WITH data_summary AS (
     SELECT
       sd.portal_id,
-      COUNT(sd.portal_dataset_id),
-      MAX(sd.updated) AS updated
+      COUNT(sd.portal_id),
+      MAX(sd.modified) AS modified
     FROM (
-      SELECT DISTINCT ON (d.portal_id, d.portal_dataset_id)
-        d.portal_dataset_id,
-        d.portal_id,
-        d.updated
-      FROM public.dataset AS d
-      ORDER BY d.portal_id, d.portal_dataset_id, d.version DESC
+      SELECT DISTINCT ON (dpx.portal_id, d.identifier)
+        d.identifier,
+        dpx.portal_id,
+        d.modified
+      FROM dataset_portal_xref AS dpx
+      LEFT JOIN dataset AS d ON dpx.dataset_id = d.id
+      ORDER BY d.portal_id, d.identifier, d.version DESC
     ) sd
     GROUP BY sd.portal_id
   )
@@ -46,7 +46,7 @@ CREATE MATERIALIZED VIEW public.mview_portal AS
     p.url,
     p.description,
     ds.count AS dataset_count,
-    ds.updated,
+    ds.modified,
     pl.name AS platform,
     r.name AS region,
     ST_AsGeoJSON(r.geom, 6)::json AS location

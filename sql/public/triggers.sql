@@ -5,41 +5,52 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
   BEGIN
     IF (TG_OP = 'INSERT') THEN
 
-      PERFORM id FROM dataset
-      WHERE portal_id = NEW.portal_id AND
-            portal_dataset_id = NEW.portal_dataset_id AND
-            version = NEW.version
+      SELECT id INTO NEW.id FROM dataset
+      WHERE identifier = NEW.identifier
       LIMIT 1;
 
-      IF FOUND THEN
+      -- Check if the dataset has been saved or associated with a specific
+      -- data portal
+      IF NEW.id IS NOT NULL AND NEW.portal_id IS NOT NULL THEN
+        PERFORM 1 FROM dataset_portal_xref AS dpx
+        WHERE dpx.dataset_id = NEW.id AND dpx.portal_id = NEW.portal_id
+
+        IF NOT FOUND THEN
+          INSERT INTO dataset_portal_xref (dataset_id, portal_id) VALUES
+          (NEW.id, NEW.portal_id);
+        END IF;
+
         RETURN NEW;
-      END IF;
-
-      SELECT id INTO publisher_id FROM dataset_publisher WHERE name = NEW.publisher LIMIT 1;
-
-      IF NOT FOUND THEN
-        INSERT INTO dataset_publisher (name) VALUES (NEW.publisher)
-        RETURNING id INTO publisher_id;
       END IF;
 
       UPDATE dataset SET version_period = tstzrange(
         lower(version_period),
-        NEW.updated,
+        NEW.modified,
         '[)'::text
       )
-      WHERE portal_dataset_id = NEW.portal_dataset_id AND
-            portal_id = NEW.portal_id AND
-            version = NEW.version - 1;
+      WHERE identifier = NEW.identifier AND version = NEW.version - 1;
 
       INSERT INTO dataset (
-        name, portal_dataset_id, uuid, created, updated, description,
-        url, publisher_id, portal_id, raw, raw_md5,
+        title, identifier, issued, modified, description,
+        landing_page, raw
         version, version_period
       ) VALUES (
-        NEW.name, NEW.portal_dataset_id, NEW.uuid, NEW.created, NEW.updated, NEW.description,
-        NEW.url, publisher_id, NEW.portal_id, NEW.raw, md5(NEW.raw::text),
+        NEW.title, NEW.identifier, NEW.issued, NEW.modified, NEW.description,
+        NEW.landing_page, NEW.raw,
         NEW.version,  NEW.version_period
       ) RETURNING id INTO NEW.id;
+
+      IF NEW.publisher IS NOT NULL THEN
+        SELECT id INTO publisher_id FROM dataset_publisher WHERE title = NEW.publisher;
+
+        IF publisher_id IS NULL THEN
+          INSERT INTO dataset_publisher (name) VALUES (NEW.publisher)
+          RETURNING id INTO publisher_id;
+        END IF;
+
+        INSERT INTO dataset_publisher_xref (dataset_id, dataset_publisher_id) VALUES
+        (NEW.id, publisher_id);
+      END IF;
 
       IF NEW.spatial IS NOT NULL THEN
         SELECT id INTO coverage_id FROM dataset_coverage
@@ -54,45 +65,46 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
         END IF;
       END IF;
 
-      WITH existing_tags AS (
-        SELECT id, name FROM dataset_tag WHERE name = any(NEW.tags)
-      ), new_tags AS (
-        INSERT INTO dataset_tag (name) (
-          SELECT tag FROM unnest(NEW.tags) AS tag
-          WHERE tag NOT IN (SELECT name FROM existing_tags)
-          AND tag <> ''
+      WITH existing_keyword AS (
+        SELECT id, name FROM dataset_keyword WHERE name = any(NEW.keyword)
+      ), new_keyword AS (
+        INSERT INTO dataset_keyword (name) (
+          SELECT keyword FROM unnest(NEW.keyword) AS keyword
+          WHERE keyword NOT IN (SELECT name FROM existing_keyword)
+          AND keyword <> ''
         ) RETURNING id, name
       )
-      INSERT INTO dataset_tag_xref (dataset_id, dataset_tag_id) (
-        SELECT NEW.id, id FROM existing_tags
+      INSERT INTO dataset_keyword_xref (dataset_id, dataset_keyword_id) (
+        SELECT NEW.id, ek.id FROM existing_keyword AS ek
         UNION ALL
-        SELECT NEW.id, id FROM new_tags
+        SELECT NEW.id, nk.id FROM new_keyword AS nk
       );
 
-      WITH existing_categories AS (
-        SELECT id, name FROM dataset_category WHERE name = any(NEW.categories)
-      ), new_categories AS (
-        INSERT INTO dataset_category (name) (
-          SELECT category FROM unnest(NEW.categories) AS category
-          WHERE category NOT IN (SELECT name FROM existing_categories)
-          AND category <> ''
+      WITH existing_theme AS (
+        SELECT id, name FROM dataset_theme WHERE name = any(NEW.theme)
+      ), new_theme AS (
+        INSERT INTO dataset_theme (name) (
+          SELECT theme FROM unnest(NEW.theme) AS theme
+          WHERE theme NOT IN (SELECT name FROM existing_theme)
+          AND theme <> ''
         ) RETURNING id, name
       )
-      INSERT INTO dataset_category_xref (dataset_id, dataset_category_id) (
-        SELECT NEW.id, id FROM existing_categories
+      INSERT INTO dataset_theme_xref (dataset_id, dataset_theme_id) (
+        SELECT NEW.id, et.id FROM existing_theme AS et
         UNION ALL
-        SELECT NEW.id, id FROM new_categories
+        SELECT NEW.id, nt.id FROM new_theme AS nt
       );
 
-      INSERT INTO dataset_file (dataset_id, name, url, format, description, extension) (
+      INSERT INTO dataset_distribution (dataset_id, title, access_url, download_url, format, description, extension) (
         SELECT
           NEW.id,
-          file ->> 'name',
-          file ->> 'url',
+          file ->> 'title',
+          file ->> 'accessURL',
+          file ->> 'downloadURL',
           file ->> 'format',
           file ->> 'description',
           file ->> 'extension'
-        FROM unnest(NEW.files) AS data(file)
+        FROM unnest(NEW.distribution) AS data(file)
       );
 
       RETURN NEW;

@@ -12,58 +12,54 @@ CREATE OR REPLACE VIEW report.view_statistics AS
   SELECT 'dataset' AS field, SUM(dataset_count) FROM mview_portal
   WHERE dataset_count IS NOT NULL
   UNION ALL
-  SELECT 'file & link' AS field, COUNT(*) FROM dataset_file
+  SELECT 'distribution' AS field, COUNT(*) FROM dataset_distribution
   UNION ALL
-  SELECT 'tag' AS field, COUNT(*) FROM dataset_tag
+  SELECT 'keyword' AS field, COUNT(*) FROM dataset_keyword
   UNION ALL
-  SELECT 'category' AS field, COUNT(*) FROM dataset_category
+  SELECT 'theme' AS field, COUNT(*) FROM dataset_theme
   UNION ALL
   SELECT 'publisher' AS field, COUNT(*) FROM dataset_publisher
   UNION ALL
   SELECT 'dataset coverage' AS field, COUNT(*) FROM dataset_coverage;
 
-CREATE OR REPLACE VIEW report.view_top_category AS
+CREATE OR REPLACE VIEW report.view_top_theme AS
   SELECT
     initcap(dc.name) AS name,
-    COUNT(DISTINCT dcx.dataset_id) AS dataset_count,
+    COUNT(d.identifier) AS dataset_count,
     COUNT(DISTINCT d.portal_id) AS portal_count
-  FROM dataset_category_xref AS dcx
-  LEFT JOIN dataset_category AS dc ON dcx.dataset_category_id = dc.id
-  LEFT JOIN mview_latest_dataset AS d ON dcx.dataset_id = d.id
-  GROUP BY initcap(dc.name)
-  ORDER BY dataset_count DESC
-  LIMIT 100;
-
-CREATE OR REPLACE VIEW report.view_top_tag AS
-  SELECT
-    initcap(dt.name) AS name,
-    COUNT(DISTINCT dtx.dataset_id) AS dataset_count,
-    COUNT(DISTINCT d.portal_id) AS portal_count
-  FROM dataset_tag_xref AS dtx
-  LEFT JOIN dataset_tag AS dt ON dtx.dataset_tag_id = dt.id
+  FROM dataset_theme_xref AS dtx
+  LEFT JOIN dataset_theme AS dt ON dtx.dataset_theme_id = dt.id
   INNER JOIN mview_latest_dataset AS d ON dtx.dataset_id = d.id
   GROUP BY initcap(dt.name)
-  ORDER BY dataset_count DESC
-  LIMIT 100;
+  ORDER BY dataset_count DESC;
+
+CREATE OR REPLACE VIEW report.view_top_keyword AS
+  SELECT
+    initcap(dk.name) AS name,
+    COUNT(d.identifier) AS dataset_count,
+    COUNT(DISTINCT d.portal_id) AS portal_count
+  FROM dataset_keyword_xref AS dkx
+  LEFT JOIN dataset_keyword AS dk ON dkx.dataset_keyword_id = dk.id
+  INNER JOIN mview_latest_dataset AS d ON dkx.dataset_id = d.id
+  GROUP BY initcap(dk.name)
+  ORDER BY dataset_count DESC;
 
 CREATE VIEW report.view_top_publisher AS
   SELECT
     initcap(d.publisher),
-    COUNT(DISTINCT d.id) AS dataset_count
+    COUNT(d.identifier) AS dataset_count
   FROM mview_latest_dataset AS d
   GROUP BY d.publisher
-  ORDER BY COUNT(d.id) DESC
-  LIMIT 100;
+  ORDER BY dataset_count DESC;
 
 CREATE VIEW report.view_top_portal AS
   SELECT
     p.name,
-    COUNT(d.id) AS dataset_count
+    COUNT(d.identifier) AS dataset_count
   FROM mview_latest_dataset AS d
   LEFT JOIN portal AS p ON p.id = d.portal_id
   GROUP BY p.name
-  ORDER BY COUNT(d.id) DESC
-  LIMIT 100;
+  ORDER BY COUNT(d.id) DESC;
 
 CREATE VIEW report.view_top_platform AS
   SELECT
@@ -74,5 +70,4 @@ CREATE VIEW report.view_top_platform AS
   FROM mview_portal AS po
   LEFT JOIN platform AS p ON p.name = po.platform
   GROUP BY p.name, p.id
-  ORDER BY SUM(po.dataset_count) DESC
-  LIMIT 100;
+  ORDER BY SUM(po.dataset_count) DESC;

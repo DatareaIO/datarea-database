@@ -32,27 +32,35 @@ CREATE TABLE public.junar_portal_info (
   api_key text NOT NULL
 );
 
+CREATE TABLE public.dataset (
+  id serial PRIMARY KEY,
+  title text NOT NULL,
+  identifier char(36) NOT NULL,
+  issued timestamptz,
+  modified timestamptz NOT NULL,
+  description text,
+  landing_page text NOT NULL,
+  license text,
+  raw json NOT NULL,
+  version integer NOT NULL,
+  version_period tstzrange NOT NULL
+);
+
+CREATE TABLE public.dataset_portal_xref (
+  id serial PRIMARY KEY,
+  dataset_id integer REFERENCES dataset (id),
+  portal_id integer REFERENCES portal (id)
+);
+
 CREATE TABLE public.dataset_publisher (
   id serial PRIMARY KEY,
   name text NOT NULL
 );
 
-CREATE TABLE public.dataset (
+CREATE TABLE public.dataset_publisher_xref (
   id serial PRIMARY KEY,
-  name text NOT NULL,
-  portal_dataset_id text,
-  uuid char(36) NOT NULL,
-  created timestamptz,
-  updated timestamptz NOT NULL,
-  description text,
-  url text NOT NULL,
-  license text,
-  publisher_id integer REFERENCES dataset_publisher (id),
-  portal_id integer REFERENCES portal (id),
-  raw json NOT NULL,
-  raw_md5 char(32) NOT NULL,
-  version integer NOT NULL,
-  version_period tstzrange NOT NULL
+  dataset_id integer REFERENCES dataset (id),
+  dataset_publisher_id REFERENCES dataset_publisher (id)
 );
 
 CREATE TABLE public.dataset_coverage (
@@ -67,34 +75,35 @@ CREATE TABLE public.dataset_coverage_xref (
   dataset_coverage_id integer NOT NULL REFERENCES dataset_coverage(id)
 );
 
-CREATE TABLE public.dataset_file (
+CREATE TABLE public.dataset_distribution (
   id serial PRIMARY KEY,
   dataset_id integer NOT NULL REFERENCES dataset(id),
-  name text DEFAULT 'Data File',
+  title text DEFAULT 'Data File',
   format text,
   extension text,
-  url text NOT NULL,
-  description text
+  description text,
+  access_url text,
+  download_url text
 );
 
-CREATE TABLE public.dataset_tag (
+CREATE TABLE public.dataset_keyword (
   id serial PRIMARY KEY,
   name text NOT NULL
 );
 
-CREATE TABLE public.dataset_tag_xref (
+CREATE TABLE public.dataset_keyword_xref (
   id serial PRIMARY KEY,
   dataset_id integer REFERENCES dataset (id),
-  dataset_tag_id integer REFERENCES dataset_tag (id)
+  dataset_keyword_id integer REFERENCES dataset_keyword (id)
 );
 
-CREATE TABLE public.dataset_category (
+CREATE TABLE public.dataset_theme (
   id serial PRIMARY KEY,
   name text NOT NULL
 );
 
-CREATE TABLE public.dataset_category_xref (
+CREATE TABLE public.dataset_theme_xref (
   id serial PRIMARY KEY,
   dataset_id integer REFERENCES dataset (id),
-  dataset_category_id integer REFERENCES dataset_category (id)
+  dataset_themeid integer REFERENCES dataset_theme (id)
 );
