@@ -35,7 +35,7 @@ CREATE TABLE public.junar_portal_info (
 CREATE TABLE public.dataset (
   id serial PRIMARY KEY,
   title text NOT NULL,
-  identifier char(36) NOT NULL,
+  identifier text NOT NULL,
   issued timestamptz,
   modified timestamptz NOT NULL,
   description text,
@@ -60,7 +60,7 @@ CREATE TABLE public.dataset_publisher (
 CREATE TABLE public.dataset_publisher_xref (
   id serial PRIMARY KEY,
   dataset_id integer REFERENCES dataset (id),
-  dataset_publisher_id REFERENCES dataset_publisher (id)
+  dataset_publisher_id integer REFERENCES dataset_publisher (id)
 );
 
 CREATE TABLE public.dataset_coverage (
