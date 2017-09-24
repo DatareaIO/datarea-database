@@ -11,28 +11,36 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
 
       -- Check if the dataset has been saved or associated with a specific
       -- data portal
-      IF NEW.id IS NOT NULL AND NEW.portal_id IS NOT NULL THEN
-        PERFORM 1 FROM dataset_portal_xref AS dpx
-        WHERE dpx.dataset_id = NEW.id AND dpx.portal_id = NEW.portal_id
+      IF NEW.id IS NOT NULL THEN
 
-        IF NOT FOUND THEN
-          INSERT INTO dataset_portal_xref (dataset_id, portal_id) VALUES
-          (NEW.id, NEW.portal_id);
+        IF NEW.portal_id IS NOT NULL THEN
+          PERFORM 1 FROM dataset_portal_xref AS dpx
+          WHERE dpx.dataset_id = NEW.id AND dpx.portal_id = NEW.portal_id;
+
+          IF NOT FOUND THEN
+            INSERT INTO dataset_portal_xref (dataset_id, portal_id) VALUES
+            (NEW.id, NEW.portal_id);
+          END IF;
         END IF;
 
         RETURN NEW;
       END IF;
 
-      UPDATE dataset SET version_period = tstzrange(
-        lower(version_period),
-        NEW.modified,
-        '[)'::text
-      )
-      WHERE identifier = NEW.identifier AND version = NEW.version - 1;
+      UPDATE dataset SET
+        version_period = tstzrange(
+          lower(version_period),
+          NEW.modified,
+          '[)'::text
+        )
+      WHERE id = (
+        SELECT id FROM mview_latest_dataset
+        WHERE title = NEW.title AND portal_id = NEW.portal_id
+        LIMIT 1
+      );
 
       INSERT INTO dataset (
         title, identifier, issued, modified, description,
-        landing_page, raw
+        landing_page, raw,
         version, version_period
       ) VALUES (
         NEW.title, NEW.identifier, NEW.issued, NEW.modified, NEW.description,
