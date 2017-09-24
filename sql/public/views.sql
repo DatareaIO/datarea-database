@@ -1,6 +1,6 @@
 CREATE OR REPLACE VIEW public.view_latest_dataset AS
   WITH ds as (
-    SELECT DISTINCT ON (identifier)
+    SELECT DISTINCT ON (po.name, d.title)
       d.id,
       d.identifier,
       d.title,
@@ -26,16 +26,20 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
     LEFT JOIN platform AS pl ON pl.id = po.platform_id
     LEFT JOIN dataset_coverage_xref AS dcx ON dcx.dataset_id = d.id
     LEFT JOIN dataset_coverage AS dc ON dc.id = dcx.dataset_coverage_id
-    ORDER BY identifier, version DESC
+    ORDER BY po.name, d.title, version DESC
   ), versions AS (
     SELECT
-      identifier,
+      d.title,
+      po.name AS portal,
       array_agg(json_build_object(
+        'identifier', identifier,
         'version', version,
-        'updated', lower(version_period)
-      ) ORDER BY version DESC) AS all
-    FROM dataset
-    GROUP BY identifier
+        'modified', lower(version_period)
+      ) ORDER BY version DESC) AS history
+    FROM dataset AS d
+    LEFT JOIN dataset_portal_xref AS dpox ON dpox.dataset_id = d.id
+    LEFT JOIN portal AS po ON po.id = dpox.portal_id
+    GROUP BY d.title, po.name
   ), dt AS (
     SELECT
       dtx.dataset_id,
@@ -56,12 +60,12 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
     SELECT
       dataset_id,
       array_agg(json_build_object(
-        'title', df.title,
-        'format', df.format,
-        'accessURL', df.access_url,
-        'downloadURL', df.download_url,
-        'description', df.description
-      )) AS files
+        'title', dd.title,
+        'format', dd.format,
+        'accessURL', dd.access_url,
+        'downloadURL', dd.download_url,
+        'description', dd.description
+      )) AS distribution
     FROM ds, dataset_distribution AS dd
     WHERE dd.dataset_id = ds.id
     GROUP BY dd.dataset_id
@@ -83,8 +87,8 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
     ds.spatial,
     ds.version,
     ds.version_period,
-    COALESCE(v.all, '{}') AS version_history,
-    COALESCE(df.distribution, '{}') AS distribution,
+    COALESCE(v.history, '{}') AS version_history,
+    COALESCE(dd.distribution, '{}') AS distribution,
     COALESCE(dt.theme, '{}') AS theme,
     COALESCE(dk.keyword, '{}') AS keyword,
     ds.raw
@@ -92,7 +96,7 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
   LEFT JOIN dt ON dt.dataset_id = ds.id
   LEFT JOIN dk ON dk.dataset_id = ds.id
   LEFT JOIN dd ON dd.dataset_id = ds.id
-  LEFT JOIN versions AS v ON v.identifier = ds.identifier;
+  LEFT JOIN versions AS v ON v.title = ds.title AND v.portal = ds.portal;
 
 CREATE OR REPLACE VIEW public.view_portal AS
   SELECT
