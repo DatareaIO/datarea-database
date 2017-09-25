@@ -62,10 +62,10 @@ CREATE OR REPLACE FUNCTION public.insert_new_dataset() RETURNS TRIGGER AS $$
 
       IF NEW.spatial IS NOT NULL THEN
         SELECT id INTO coverage_id FROM dataset_coverage
-        WHERE ST_Equals(ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.spatial::text)), 4326), geom) LIMIT 1;
+        WHERE ST_Equals(ST_MakeValid(ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.spatial::text)), 4326)), geom) LIMIT 1;
 
         IF NOT FOUND THEN
-          INSERT INTO dataset_coverage (geom) VALUES (ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.spatial::text)), 4326))
+          INSERT INTO dataset_coverage (geom) VALUES (ST_MakeValid(ST_SetSRID(ST_Force2D(ST_GeomFromGeoJSON(NEW.spatial::text)), 4326)))
           RETURNING id INTO coverage_id;
 
           INSERT INTO dataset_coverage_xref (dataset_id, dataset_coverage_id) VALUES
