@@ -1,9 +1,10 @@
 CREATE OR REPLACE VIEW public.view_latest_dataset AS
   WITH ds as (
-    SELECT DISTINCT ON (po.name, d.title)
+    SELECT DISTINCT ON (po.name, d.portal_dataset_id)
       d.id,
       d.identifier,
       d.title,
+      d.portal_dataset_id,
       d.description,
       dp.name AS publisher,
       po.id AS portal_id,
@@ -26,10 +27,10 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
     LEFT JOIN platform AS pl ON pl.id = po.platform_id
     LEFT JOIN dataset_coverage_xref AS dcx ON dcx.dataset_id = d.id
     LEFT JOIN dataset_coverage AS dc ON dc.id = dcx.dataset_coverage_id
-    ORDER BY po.name, d.title, version DESC
+    ORDER BY po.name, d.portal_dataset_id, version DESC
   ), versions AS (
     SELECT
-      d.title,
+      d.portal_dataset_id,
       po.name AS portal,
       array_agg(json_build_object(
         'identifier', identifier,
@@ -39,7 +40,7 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
     FROM dataset AS d
     LEFT JOIN dataset_portal_xref AS dpox ON dpox.dataset_id = d.id
     LEFT JOIN portal AS po ON po.id = dpox.portal_id
-    GROUP BY d.title, po.name
+    GROUP BY d.portal_dataset_id, po.name
   ), dt AS (
     SELECT
       dtx.dataset_id,
@@ -96,7 +97,7 @@ CREATE OR REPLACE VIEW public.view_latest_dataset AS
   LEFT JOIN dt ON dt.dataset_id = ds.id
   LEFT JOIN dk ON dk.dataset_id = ds.id
   LEFT JOIN dd ON dd.dataset_id = ds.id
-  LEFT JOIN versions AS v ON v.title = ds.title AND v.portal = ds.portal;
+  LEFT JOIN versions AS v ON v.portal_dataset_id = ds.portal_dataset_id AND v.portal = ds.portal;
 
 CREATE OR REPLACE VIEW public.view_portal AS
   SELECT
